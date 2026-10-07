@@ -1,0 +1,73 @@
+---
+import { Image } from 'astro:assets';
+import { getEntry } from 'astro:content';
+import type { Post } from '../utils/posts';
+import { formatDate } from '../utils/posts';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const category = await getEntry(post.data.category);
+---
+
+<article class="card">
+  <a href={`/blog/${post.id}/`} class="cover">
+    <Image src={post.data.cover} alt={post.data.coverAlt} width={640} />
+  </a>
+  <div class="body">
+    {
+      category && (
+        <a class="category" href={`/kategorie/${category.id}/`}>
+          {category.data.name}
+        </a>
+      )
+    }
+    <h3><a href={`/blog/${post.id}/`}>{post.data.title}</a></h3>
+    <p>{post.data.description}</p>
+    <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+  </div>
+</article>
+
+<style>
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .cover img {
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    width: 100%;
+  }
+  .body {
+    padding: 1.25rem;
+  }
+  .category {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  h3 {
+    margin: 0.4rem 0;
+    font-size: 1.35rem;
+  }
+  h3 a {
+    text-decoration: none;
+  }
+  p {
+    margin: 0 0 0.75rem;
+    color: var(--color-muted);
+  }
+  time {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+  }
+</style>
