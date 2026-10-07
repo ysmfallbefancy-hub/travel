@@ -13,7 +13,7 @@ const { prevUrl, nextUrl, current, last } = Astro.props;
   last > 1 && (
     <nav class="pagination" aria-label="Seitennavigation">
       {prevUrl ? <a href={prevUrl}>← Neuere Beiträge</a> : <span />}
-      <span>
+      <span class="count">
         Seite {current} von {last}
       </span>
       {nextUrl ? <a href={nextUrl}>Ältere Beiträge →</a> : <span />}
@@ -23,13 +23,30 @@ const { prevUrl, nextUrl, current, last } = Astro.props;
 
 <style>
   .pagination {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
+    gap: 1rem;
     padding-bottom: 3rem;
     color: var(--color-muted);
   }
   a {
-    color: var(--color-accent);
+    justify-self: start;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--color-text);
+    transition: border-color 0.15s ease;
+  }
+  a:last-child {
+    justify-self: end;
+  }
+  a:hover {
+    border-color: var(--color-text);
+  }
+  .count {
+    font-size: 0.9rem;
   }
 </style>

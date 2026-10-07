@@ -3,14 +3,23 @@ import type { GetStaticPaths } from 'astro';
 import { Image } from 'astro:assets';
 import { getEntry, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
 import { formatDate, getPosts, readingTime } from '../../utils/posts';
 
 export const getStaticPaths = (async () => {
   const posts = await getPosts();
-  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+  return posts.map((post) => {
+    // Weiterlesen: zuerst Beiträge aus derselben Kategorie, dann die neuesten
+    const others = posts.filter((p) => p.id !== post.id);
+    const related = [
+      ...others.filter((p) => p.data.category.id === post.data.category.id),
+      ...others.filter((p) => p.data.category.id !== post.data.category.id),
+    ].slice(0, 3);
+    return { params: { slug: post.id }, props: { post, related } };
+  });
 }) satisfies GetStaticPaths;
 
-const { post } = Astro.props;
+const { post, related } = Astro.props;
 const { Content } = await render(post);
 const category = await getEntry(post.data.category);
 const author = await getEntry(post.data.author);
@@ -18,102 +27,220 @@ const minutes = readingTime(post.body);
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description} image={post.data.cover.src}>
-  <article class="container">
-    <header class="post-header">
-      {category && <a class="category" href={`/kategorie/${category.id}/`}>{category.data.name}</a>}
+  <article>
+    <header class="post-header container">
+      {category && <a class="eyebrow" href={`/kategorie/${category.id}/`}>{category.data.name}</a>}
       <h1>{post.data.title}</h1>
-      <p class="meta">
-        {author && <a href="/ueber-uns/">{author.data.name}</a>}
-        <span aria-hidden="true">·</span>
-        <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
-        <span aria-hidden="true">·</span>
-        <span>{minutes} Min. Lesezeit</span>
-      </p>
-      {
-        post.data.updated && (
+      <p class="lead">{post.data.description}</p>
+      <div class="byline">
+        {
+          author?.data.avatar && (
+            <Image src={author.data.avatar} alt="" width={48} height={48} densities={[1, 2]} class="avatar" />
+          )
+        }
+        <div>
+          {author && <a href="/ueber-uns/" class="author">{author.data.name}</a>}
           <p class="meta">
-            Aktualisiert am <time datetime={post.data.updated.toISOString()}>{formatDate(post.data.updated)}</time>
+            <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+            <span aria-hidden="true">·</span>
+            <span>{minutes} Min. Lesezeit</span>
+            {
+              post.data.updated && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span>
+                    Aktualisiert am{' '}
+                    <time datetime={post.data.updated.toISOString()}>{formatDate(post.data.updated)}</time>
+                  </span>
+                </>
+              )
+            }
           </p>
-        )
-      }
+        </div>
+      </div>
     </header>
 
-    <Image src={post.data.cover} alt={post.data.coverAlt} width={1200} class="cover" loading="eager" />
+    <figure class="cover container">
+      <Image
+        src={post.data.cover}
+        alt={post.data.coverAlt}
+        widths={[640, 1024, 1400, 2000]}
+        sizes="(min-width: 1200px) 1200px, 100vw"
+        loading="eager"
+        fetchpriority="high"
+      />
+      {post.data.coverAlt && <figcaption>{post.data.coverAlt}</figcaption>}
+    </figure>
 
-    <div class="prose">
-      <Content />
+    <div class="container body">
+      <div class="prose">
+        <Content />
+      </div>
+
+      {
+        post.data.tags.length > 0 && (
+          <ul class="tags" aria-label="Schlagwörter">
+            {post.data.tags.map((tag) => (
+              <li>#{tag}</li>
+            ))}
+          </ul>
+        )
+      }
+
+      {
+        author && (
+          <aside class="author-box" aria-label="Über die Autorin oder den Autor">
+            {author.data.avatar && (
+              <Image src={author.data.avatar} alt="" width={88} height={88} densities={[1, 2]} class="avatar" />
+            )}
+            <div>
+              <span class="eyebrow">Geschrieben von</span>
+              <h2>{author.data.name}</h2>
+              {author.data.role && <p class="role">{author.data.role}</p>}
+              <p>{author.data.bio}</p>
+            </div>
+          </aside>
+        )
+      }
     </div>
-
-    {
-      post.data.tags.length > 0 && (
-        <ul class="tags" aria-label="Schlagwörter">
-          {post.data.tags.map((tag) => (
-            <li>#{tag}</li>
-          ))}
-        </ul>
-      )
-    }
-
-    {
-      author && (
-        <aside class="author-box">
-          <h2>Über {author.data.name}</h2>
-          <p>{author.data.bio}</p>
-        </aside>
-      )
-    }
   </article>
+
+  {
+    related.length > 0 && (
+      <section class="section container related" aria-labelledby="weiterlesen">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Weiterlesen</span>
+            <h2 id="weiterlesen">Das könnte dir auch gefallen</h2>
+          </div>
+          <a href="/blog/" class="link-arrow">
+            Alle Beiträge →
+          </a>
+        </div>
+        <div class="post-grid">
+          {related.map((p) => (
+            <PostCard post={p} />
+          ))}
+        </div>
+      </section>
+    )
+  }
 </BaseLayout>
 
 <style>
   .post-header {
-    max-width: 70ch;
-    padding-block: 3rem 1.5rem;
+    max-width: 800px;
+    padding-block: 3.5rem 2.5rem;
+    text-align: center;
+  }
+  .post-header .eyebrow {
+    text-decoration: none;
   }
   .post-header h1 {
-    font-size: clamp(2rem, 5vw, 3.25rem);
-    margin: 0.4rem 0 0.75rem;
+    margin: 0.75rem 0 1rem;
+    font-size: clamp(2.3rem, 6vw, 4rem);
+    line-height: 1.05;
   }
-  .category {
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.85rem;
+  .lead {
+    margin: 0 auto 2rem;
+    max-width: 60ch;
+    font-size: 1.2rem;
+    color: var(--color-muted);
+  }
+  .byline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    text-align: left;
+  }
+  .avatar {
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .author {
     font-weight: 600;
-    color: var(--color-accent);
     text-decoration: none;
+  }
+  .author:hover {
+    color: var(--color-accent);
   }
   .meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    color: var(--color-muted);
+    gap: 0.4rem;
     margin: 0;
+    font-size: 0.9rem;
+    color: var(--color-muted);
   }
   .cover {
+    margin-block: 0 3rem;
+  }
+  .cover img {
     width: 100%;
-    border-radius: var(--radius);
+    max-height: 75vh;
     aspect-ratio: 16 / 9;
     object-fit: cover;
-    margin-bottom: 2rem;
+    border-radius: var(--radius);
+  }
+  figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+    text-align: center;
+  }
+  .body {
+    display: grid;
+    justify-items: center;
+  }
+  .body > * {
+    width: 100%;
+    max-width: 760px;
   }
   .tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     list-style: none;
+    margin: 1.5rem 0 0;
     padding: 0;
+  }
+  .tags li {
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    background: var(--color-surface-2);
+    font-size: 0.875rem;
     color: var(--color-muted);
   }
   .author-box {
-    max-width: 70ch;
-    margin-top: 2rem;
-    padding: 1.5rem;
-    border: 1px solid var(--color-border);
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    margin-top: 3rem;
+    padding: 1.75rem;
     border-radius: var(--radius);
     background: var(--color-surface);
+    border: 1px solid var(--color-border);
   }
   .author-box h2 {
-    margin-top: 0;
-    font-size: 1.25rem;
+    margin: 0.2rem 0 0;
+    font-size: 1.4rem;
+  }
+  .author-box .role {
+    margin: 0.15rem 0 0.6rem;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+  }
+  .author-box p {
+    margin-bottom: 0;
+  }
+  .related {
+    margin-top: 3rem;
+    border-top: 1px solid var(--color-border);
+  }
+  @media (max-width: 540px) {
+    .author-box {
+      flex-direction: column;
+    }
   }
 </style>

@@ -1,0 +1,77 @@
+---
+import { getCollection } from 'astro:content';
+
+interface Props {
+  /** Slug der aktuell gewählten Kategorie; leer bedeutet „Alle“. */
+  active?: string;
+}
+
+const { active } = Astro.props;
+const categories = (await getCollection('categories')).sort((a, b) =>
+  a.data.name.localeCompare(b.data.name, 'de'),
+);
+---
+
+<nav class="category-bar" aria-label="Kategorien">
+  <ul class="container">
+    <li>
+      <a href="/blog/" aria-current={!active ? 'page' : undefined}>Alle Beiträge</a>
+    </li>
+    {
+      categories.map((c) => (
+        <li>
+          <a href={`/kategorie/${c.id}/`} aria-current={active === c.id ? 'page' : undefined}>
+            {c.data.name}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  .category-bar {
+    border-block: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+  ul {
+    display: flex;
+    gap: 0.5rem;
+    list-style: none;
+    margin-block: 0;
+    padding: 0.85rem 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+  }
+  ul::-webkit-scrollbar {
+    display: none;
+  }
+  li {
+    flex-shrink: 0;
+  }
+  a {
+    display: inline-block;
+    padding: 0.45rem 1.05rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-size: 0.92rem;
+    font-weight: 550;
+    text-decoration: none;
+    color: var(--color-muted);
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease,
+      background-color 0.15s ease;
+  }
+  a:hover {
+    color: var(--color-text);
+    border-color: var(--color-text);
+  }
+  a[aria-current='page'] {
+    background: var(--color-text);
+    border-color: var(--color-text);
+    color: var(--color-bg);
+  }
+</style>
