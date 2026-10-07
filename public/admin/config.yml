@@ -1,0 +1,150 @@
+# Sveltia CMS – Konfiguration für den Reiseblog
+# Doku: https://sveltiacms.app/en/docs
+# Die Felder müssen zum Schema in src/content.config.ts passen.
+# Die Oberfläche erscheint auf Deutsch, wenn der Browser auf Deutsch steht
+# (sonst unter Einstellungen → Sprache umstellbar).
+
+backend:
+  name: github
+  repo: ysmfallbefancy-hub/travel
+  branch: main
+  # TODO (Deployment): URL des OAuth-Workers (Sveltia CMS Authenticator) eintragen,
+  # z. B. https://sveltia-cms-auth.<konto>.workers.dev – siehe README, Abschnitt „Redaktion“.
+  # Bis dahin funktioniert die Anmeldung mit einem GitHub-Zugriffstoken
+  # oder lokal über „Mit lokalem Repository arbeiten“.
+  # base_url: https://sveltia-cms-auth.<konto>.workers.dev
+  commit_messages:
+    create: 'Neu: {{collection}} „{{slug}}“'
+    update: 'Aktualisiert: {{collection}} „{{slug}}“'
+    delete: 'Gelöscht: {{collection}} „{{slug}}“'
+    uploadMedia: 'Bild hochgeladen: {{path}}'
+    deleteMedia: 'Bild gelöscht: {{path}}'
+
+app_title: Reisen & Geschichten – Redaktion
+site_url: https://reisen-und-geschichten.pages.dev
+display_url: https://reisen-und-geschichten.pages.dev
+
+# Ablage für Bilder, die keiner Sammlung zugeordnet sind (werden nicht von Astro optimiert).
+media_folder: public/images/uploads
+public_folder: /images/uploads
+
+# Saubere URLs: Umlaute werden umschrieben (z. B. „für“ → „fuer“). Der Slug lässt sich im Editor anpassen.
+slug:
+  encoding: ascii
+  clean_accents: true
+
+# Leere optionale Felder nicht speichern, sonst schlägt die Schema-Prüfung von Astro fehl
+# (z. B. „updated: ''“ ist kein gültiges Datum).
+output:
+  omit_empty_optional_fields: true
+
+collections:
+  - name: blog
+    label: Beiträge
+    label_singular: Beitrag
+    description: Reiseberichte und Tipps. Entwürfe erscheinen nicht auf der Website.
+    icon: article
+    folder: src/content/blog
+    extension: md
+    format: frontmatter
+    create: true
+    slug:
+      template: '{{title}}'
+      pattern: ['^[a-z0-9]+(-[a-z0-9]+)*$', 'Nur Kleinbuchstaben, Ziffern und Bindestriche']
+      hint: Teil der Adresse, z. B. /blog/lissabon-in-drei-tagen/
+    # Bilder liegen in src/assets/images/blog/ und werden von Astro optimiert.
+    # Im Beitrag wird der Pfad relativ gespeichert (../../assets/images/blog/…), wie Astro ihn erwartet.
+    media_folder: /src/assets/images/blog
+    public_folder: ../../assets/images/blog
+    summary: '{{title}} – {{date | date(''DD.MM.YYYY'')}}{{draft | ternary('' (Entwurf)'', '''')}}'
+    sortable_fields: [title, date, category, author]
+    view_filters:
+      - { label: Entwürfe, field: draft, pattern: true }
+      - { label: Hervorgehoben, field: featured, pattern: true }
+    view_groups:
+      - { label: Kategorie, field: category }
+      - { label: Jahr, field: date, pattern: '\d{4}' }
+    preview_path: blog/{{slug}}/
+    fields:
+      - { name: title, label: Titel, widget: string }
+      - name: description
+        label: Kurzbeschreibung
+        widget: text
+        hint: Erscheint in der Übersicht und in Suchmaschinen (ca. 150 Zeichen).
+      - name: date
+        label: Veröffentlicht am
+        widget: datetime
+        type: date
+        format: YYYY-MM-DD
+        default: '{{now}}'
+      - name: updated
+        label: Aktualisiert am
+        widget: datetime
+        type: date
+        format: YYYY-MM-DD
+        required: false
+      - { name: cover, label: Titelbild, widget: image }
+      - name: coverAlt
+        label: Bildbeschreibung (Alt-Text)
+        widget: string
+        required: false
+        hint: Beschreibt das Titelbild für Screenreader.
+      - name: category
+        label: Kategorie
+        widget: relation
+        collection: categories
+        value_field: '{{slug}}'
+        search_fields: [name]
+        display_fields: [name]
+      - name: author
+        label: Autor/in
+        widget: relation
+        collection: authors
+        value_field: '{{slug}}'
+        search_fields: [name]
+        display_fields: [name]
+      - name: tags
+        label: Schlagwörter
+        widget: list
+        required: false
+        hint: Mit Komma trennen, z. B. Portugal, Städtereise
+      - { name: featured, label: Auf der Startseite hervorheben, widget: boolean, default: false, required: false }
+      - { name: draft, label: Entwurf (nicht veröffentlichen), widget: boolean, default: false, required: false }
+      - { name: body, label: Text, widget: markdown }
+
+  - name: categories
+    label: Kategorien
+    label_singular: Kategorie
+    icon: category
+    folder: src/content/categories
+    extension: json
+    format: json
+    identifier_field: name
+    slug:
+      template: '{{name}}'
+      pattern: ['^[a-z0-9]+(-[a-z0-9]+)*$', 'Nur Kleinbuchstaben, Ziffern und Bindestriche']
+      hint: Teil der Adresse, z. B. /kategorie/europa/
+    preview_path: kategorie/{{slug}}/
+    fields:
+      - { name: name, label: Name, widget: string }
+      - { name: description, label: Beschreibung, widget: text, required: false }
+
+  - name: authors
+    label: Autorinnen & Autoren
+    label_singular: Person
+    icon: person
+    folder: src/content/authors
+    extension: json
+    format: json
+    identifier_field: name
+    slug:
+      template: '{{name}}'
+      pattern: ['^[a-z0-9]+(-[a-z0-9]+)*$', 'Nur Kleinbuchstaben, Ziffern und Bindestriche']
+      hint: Kurzer interner Name, z. B. anna
+    media_folder: /src/assets/images/authors
+    public_folder: ../../assets/images/authors
+    fields:
+      - { name: name, label: Name, widget: string }
+      - { name: role, label: Rolle, widget: string, required: false }
+      - { name: bio, label: Kurzbiografie, widget: text }
+      - { name: avatar, label: Profilbild, widget: image, required: false }
