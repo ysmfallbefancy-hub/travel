@@ -1,0 +1,35 @@
+---
+interface Props {
+  prevUrl?: string;
+  nextUrl?: string;
+  current: number;
+  last: number;
+}
+
+const { prevUrl, nextUrl, current, last } = Astro.props;
+---
+
+{
+  last > 1 && (
+    <nav class="pagination" aria-label="Seitennavigation">
+      {prevUrl ? <a href={prevUrl}>← Neuere Beiträge</a> : <span />}
+      <span>
+        Seite {current} von {last}
+      </span>
+      {nextUrl ? <a href={nextUrl}>Ältere Beiträge →</a> : <span />}
+    </nav>
+  )
+}
+
+<style>
+  .pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 3rem;
+    color: var(--color-muted);
+  }
+  a {
+    color: var(--color-accent);
+  }
+</style>

@@ -1,0 +1,60 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPosts } from '../utils/posts';
+
+const categories = await getCollection('categories');
+const posts = await getPosts();
+const count = (id: string) => posts.filter((p) => p.data.category.id === id).length;
+---
+
+<BaseLayout title="Kategorien" description="Alle Themen des Blogs auf einen Blick.">
+  <header class="page-header container">
+    <h1>Kategorien</h1>
+    <p>Stöbere nach Reiseziel oder Thema.</p>
+  </header>
+  <section class="container">
+    <ul class="list">
+      {
+        categories.map((c) => (
+          <li>
+            <a href={`/kategorie/${c.id}/`}>
+              <h2>{c.data.name}</h2>
+              <p>{c.data.description}</p>
+              <span>{count(c.id) === 1 ? '1 Beitrag' : `${count(c.id)} Beiträge`}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+    list-style: none;
+    padding: 0;
+  }
+  .list a {
+    display: block;
+    height: 100%;
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    text-decoration: none;
+  }
+  h2 {
+    margin: 0 0 0.5rem;
+  }
+  p {
+    color: var(--color-muted);
+  }
+  span {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+</style>

@@ -1,0 +1,119 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { Image } from 'astro:assets';
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatDate, getPosts, readingTime } from '../../utils/posts';
+
+export const getStaticPaths = (async () => {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}) satisfies GetStaticPaths;
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const category = await getEntry(post.data.category);
+const author = await getEntry(post.data.author);
+const minutes = readingTime(post.body);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description} image={post.data.cover.src}>
+  <article class="container">
+    <header class="post-header">
+      {category && <a class="category" href={`/kategorie/${category.id}/`}>{category.data.name}</a>}
+      <h1>{post.data.title}</h1>
+      <p class="meta">
+        {author && <a href="/ueber-uns/">{author.data.name}</a>}
+        <span aria-hidden="true">·</span>
+        <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+        <span aria-hidden="true">·</span>
+        <span>{minutes} Min. Lesezeit</span>
+      </p>
+      {
+        post.data.updated && (
+          <p class="meta">
+            Aktualisiert am <time datetime={post.data.updated.toISOString()}>{formatDate(post.data.updated)}</time>
+          </p>
+        )
+      }
+    </header>
+
+    <Image src={post.data.cover} alt={post.data.coverAlt} width={1200} class="cover" loading="eager" />
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    {
+      post.data.tags.length > 0 && (
+        <ul class="tags" aria-label="Schlagwörter">
+          {post.data.tags.map((tag) => (
+            <li>#{tag}</li>
+          ))}
+        </ul>
+      )
+    }
+
+    {
+      author && (
+        <aside class="author-box">
+          <h2>Über {author.data.name}</h2>
+          <p>{author.data.bio}</p>
+        </aside>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .post-header {
+    max-width: 70ch;
+    padding-block: 3rem 1.5rem;
+  }
+  .post-header h1 {
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    margin: 0.4rem 0 0.75rem;
+  }
+  .category {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    color: var(--color-muted);
+    margin: 0;
+  }
+  .cover {
+    width: 100%;
+    border-radius: var(--radius);
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    margin-bottom: 2rem;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    color: var(--color-muted);
+  }
+  .author-box {
+    max-width: 70ch;
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+  .author-box h2 {
+    margin-top: 0;
+    font-size: 1.25rem;
+  }
+</style>
