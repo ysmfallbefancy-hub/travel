@@ -72,12 +72,12 @@ Die Oberfläche ist deutsch, wenn der Browser auf Deutsch eingestellt ist (sonst
 
 GitHub erlaubt den Login nicht direkt aus dem Browser, deshalb braucht es den [Sveltia CMS Authenticator](https://github.com/sveltia/sveltia-cms-auth), einen kostenlosen Cloudflare Worker.
 
-1. Worker aus dem Sveltia-CMS-Auth-Repository in Cloudflare bereitstellen (Button „Deploy to Cloudflare“ in dessen README). Ergebnis: eine URL wie `https://sveltia-cms-auth.<konto>.workers.dev`.
+1. Worker aus dem Sveltia-CMS-Auth-Repository in Cloudflare bereitstellen (Button „Deploy to Cloudflare“ in dessen README). Ergebnis: eine URL wie `https://sveltia-cms-auth.ysmfall-befancy.workers.dev`.
 2. Auf GitHub unter *Settings → Developer settings → OAuth Apps* eine neue OAuth-App anlegen:
-   - Homepage URL: die Adresse der Website, z. B. `https://reisen-und-geschichten.<konto>.workers.dev`
-   - Authorization callback URL: `https://sveltia-cms-auth.<konto>.workers.dev/callback`
+   - Homepage URL: die Adresse der Website, z. B. `https://reisen-und-geschichten.ysmfall-befancy.workers.dev`
+   - Authorization callback URL: `https://sveltia-cms-auth.ysmfall-befancy.workers.dev/callback`
 3. Im Worker unter *Settings → Variables* eintragen:
    - `GITHUB_CLIENT_ID` und `GITHUB_CLIENT_SECRET` (als Secret) aus der OAuth-App
-   - `ALLOWED_DOMAINS`: die Domain(s) der Website, z. B. `reisen-und-geschichten.<konto>.workers.dev` (bei eigener Domain auch diese)
+   - `ALLOWED_DOMAINS`: die Domain(s) der Website, z. B. `reisen-und-geschichten.ysmfall-befancy.workers.dev` (bei eigener Domain auch diese)
 4. In `public/admin/config.yml` bei `backend` die Zeile `base_url:` mit der Worker-URL einkommentieren.
 5. Bei eigener Domain außerdem `site_url` und `display_url` in `config.yml` sowie `site` in `astro.config.mjs` anpassen.

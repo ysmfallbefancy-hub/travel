@@ -9,10 +9,10 @@ backend:
   repo: ysmfallbefancy-hub/travel
   branch: main
   # TODO (Deployment): URL des OAuth-Workers (Sveltia CMS Authenticator) eintragen,
-  # z. B. https://sveltia-cms-auth.<konto>.workers.dev – siehe README, Abschnitt „Redaktion“.
+  # z. B. https://sveltia-cms-auth.ysmfall-befancy.workers.dev – siehe README, Abschnitt „Redaktion“.
   # Bis dahin funktioniert die Anmeldung mit einem GitHub-Zugriffstoken
   # oder lokal über „Mit lokalem Repository arbeiten“.
-  # base_url: https://sveltia-cms-auth.<konto>.workers.dev
+  # base_url: https://sveltia-cms-auth.ysmfall-befancy.workers.dev
   commit_messages:
     create: 'Neu: {{collection}} „{{slug}}“'
     update: 'Aktualisiert: {{collection}} „{{slug}}“'
@@ -21,8 +21,8 @@ backend:
     deleteMedia: 'Bild gelöscht: {{path}}'
 
 app_title: Reisen & Geschichten – Redaktion
-site_url: https://reisen-und-geschichten.pages.dev
-display_url: https://reisen-und-geschichten.pages.dev
+site_url: https://reisen-und-geschichten.ysmfall-befancy.workers.dev
+display_url: https://reisen-und-geschichten.ysmfall-befancy.workers.dev
 
 # Ablage für Bilder, die keiner Sammlung zugeordnet sind (werden nicht von Astro optimiert).
 media_folder: public/images/uploads

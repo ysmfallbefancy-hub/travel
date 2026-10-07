@@ -2,9 +2,8 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
-// TODO: Nach dem Deployment (Cloudflare Workers) durch die echte Domain ersetzen.
 export default defineConfig({
-  site: 'https://reisen-und-geschichten.pages.dev',
+  site: 'https://reisen-und-geschichten.ysmfall-befancy.workers.dev',
   trailingSlash: 'ignore',
   integrations: [
     sitemap({
