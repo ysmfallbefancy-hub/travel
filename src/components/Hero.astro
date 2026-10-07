@@ -1,0 +1,126 @@
+---
+import { Image } from 'astro:assets';
+import { getEntry } from 'astro:content';
+import type { Post } from '../utils/posts';
+import { formatDate, readingTime } from '../utils/posts';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const category = await getEntry(post.data.category);
+const author = await getEntry(post.data.author);
+const url = `/blog/${post.id}/`;
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <Image
+    src={post.data.cover}
+    alt={post.data.coverAlt}
+    widths={[640, 1024, 1600, 2400]}
+    sizes="100vw"
+    loading="eager"
+    fetchpriority="high"
+    class="hero-image"
+  />
+  <div class="shade" aria-hidden="true"></div>
+  <div class="container content">
+    <span class="badge">Empfohlener Beitrag{category && ` · ${category.data.name}`}</span>
+    <h1 id="hero-title"><a href={url}>{post.data.title}</a></h1>
+    <p class="lead">{post.data.description}</p>
+    <p class="meta">
+      {author && <span>von {author.data.name}</span>}
+      <span aria-hidden="true">·</span>
+      <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+      <span aria-hidden="true">·</span>
+      <span>{readingTime(post.body)} Min. Lesezeit</span>
+    </p>
+    <a href={url} class="button">Geschichte lesen <span aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: flex-end;
+    min-height: min(82vh, 760px);
+    color: #fff;
+    overflow: hidden;
+    background: #222;
+  }
+  .hero-image {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(to top, rgb(0 0 0 / 0.78) 0%, rgb(0 0 0 / 0.35) 45%, rgb(0 0 0 / 0.1) 75%),
+      linear-gradient(to right, rgb(0 0 0 / 0.35), transparent 60%);
+  }
+  .content {
+    padding-block: 6rem 4rem;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.16);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  h1 {
+    max-width: 18ch;
+    margin: 1rem 0 0.75rem;
+    font-size: clamp(2.6rem, 7vw, 5rem);
+    font-weight: 600;
+    line-height: 1.02;
+    text-shadow: 0 2px 24px rgb(0 0 0 / 0.25);
+  }
+  h1 a {
+    text-decoration: none;
+  }
+  .lead {
+    max-width: 56ch;
+    margin: 0 0 1rem;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: rgb(255 255 255 / 0.9);
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0 0 1.75rem;
+    font-size: 0.95rem;
+    color: rgb(255 255 255 / 0.8);
+  }
+  .button {
+    background: #fff;
+    color: #1c1d21;
+  }
+  .button:hover {
+    background: var(--color-accent-soft);
+    color: #1c1d21;
+  }
+  @media (max-width: 600px) {
+    .hero {
+      min-height: 78vh;
+    }
+    .content {
+      padding-block: 4rem 2.5rem;
+    }
+  }
+</style>

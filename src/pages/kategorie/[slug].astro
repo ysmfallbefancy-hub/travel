@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import CategoryBar from '../../components/CategoryBar.astro';
 import PostCard from '../../components/PostCard.astro';
 import { getPosts } from '../../utils/posts';
 
@@ -19,19 +20,21 @@ const { category, posts } = Astro.props;
 
 <BaseLayout title={category.data.name} description={category.data.description}>
   <header class="page-header container">
+    <span class="eyebrow">Kategorie · {posts.length === 1 ? '1 Beitrag' : `${posts.length} Beiträge`}</span>
     <h1>{category.data.name}</h1>
     <p>{category.data.description}</p>
   </header>
+  <CategoryBar active={category.id} />
   <section class="container">
     {
       posts.length > 0 ? (
-        <div class="post-grid">
-          {posts.map((post) => (
-            <PostCard post={post} />
+        <div class="post-grid listing">
+          {posts.map((post, i) => (
+            <PostCard post={post} eager={i < 3} />
           ))}
         </div>
       ) : (
-        <p>In dieser Kategorie gibt es noch keine Beiträge.</p>
+        <p class="empty listing">In dieser Kategorie gibt es noch keine Beiträge.</p>
       )
     }
   </section>

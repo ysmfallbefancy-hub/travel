@@ -1,15 +1,44 @@
-/* Grundlegende Styles. Das finale Design folgt in einem eigenen Schritt. */
+/* Globale Styles: Farben, Typografie und wiederverwendbare Bausteine.
+   Schriften werden lokal ausgeliefert (kein Google-Fonts-Abruf, DSGVO-freundlich). */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/fraunces';
+
 :root {
-  --color-bg: #fbfaf7;
+  color-scheme: light;
+  --color-bg: #faf8f4;
   --color-surface: #ffffff;
-  --color-text: #1f2328;
-  --color-muted: #5f6670;
-  --color-accent: #d1495b;
-  --color-border: #e7e3dc;
-  --radius: 14px;
-  --max-width: 1140px;
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-serif: Georgia, 'Times New Roman', serif;
+  --color-surface-2: #f2eee7;
+  --color-text: #1c1d21;
+  --color-muted: #63666e;
+  --color-accent: #c2410c;
+  --color-accent-hover: #9a3412;
+  --color-accent-soft: #fbe9df;
+  --color-on-accent: #ffffff;
+  --color-border: #e6e1d8;
+  --shadow-sm: 0 1px 2px rgb(20 20 20 / 0.06);
+  --shadow-md: 0 10px 30px -12px rgb(20 20 20 / 0.25);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --max-width: 1200px;
+  --header-height: 68px;
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #121316;
+  --color-surface: #1b1d21;
+  --color-surface-2: #24262b;
+  --color-text: #ecebe8;
+  --color-muted: #a2a5ad;
+  --color-accent: #fb923c;
+  --color-accent-hover: #fdba74;
+  --color-accent-soft: #3a2518;
+  --color-on-accent: #1a0f08;
+  --color-border: #2e3036;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 12px 32px -12px rgb(0 0 0 / 0.7);
 }
 
 *,
@@ -20,14 +49,33 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-height) + 1rem);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-sans);
+  font-size: 1rem;
   line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+main {
+  flex: 1;
 }
 
 img {
@@ -40,54 +88,197 @@ a {
   color: inherit;
 }
 
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
 h1,
 h2,
-h3 {
+h3,
+h4 {
   font-family: var(--font-serif);
-  line-height: 1.2;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 
 .container {
-  width: min(100% - 2rem, var(--max-width));
+  width: min(100% - 2.5rem, var(--max-width));
   margin-inline: auto;
 }
 
+/* Kleine Überschrift über Abschnitten, z. B. „Neu im Blog“ */
+.eyebrow {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.section {
+  padding-block: 3.5rem;
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.section-head h2 {
+  margin: 0.25rem 0 0;
+  font-size: clamp(1.75rem, 3.5vw, 2.4rem);
+}
+
+.link-arrow {
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.link-arrow:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.4rem;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.button:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+}
+
 .page-header {
-  padding-block: 3rem 1.5rem;
+  padding-block: 3.5rem 1.5rem;
 }
 
 .page-header h1 {
-  font-size: clamp(2rem, 4vw, 3rem);
-  margin: 0 0 0.5rem;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  margin: 0.25rem 0 0.75rem;
 }
 
 .page-header p {
   color: var(--color-muted);
+  font-size: 1.15rem;
   margin: 0;
   max-width: 60ch;
 }
 
 .post-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-  padding-block: 1.5rem 4rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 2.25rem 2rem;
+  padding-block: 1rem 3.5rem;
 }
 
+.empty {
+  padding: 2rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-muted);
+  text-align: center;
+}
+
+/* Fließtext in Beiträgen und Textseiten */
 .prose {
-  max-width: 70ch;
+  max-width: 68ch;
   font-size: 1.125rem;
+  line-height: 1.8;
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose h2 {
+  font-size: 1.85rem;
+  margin: 2.5rem 0 0.75rem;
+}
+
+.prose h3 {
+  font-size: 1.4rem;
+  margin: 2rem 0 0.5rem;
+}
+
+.prose p,
+.prose ul,
+.prose ol {
+  margin: 0 0 1.25rem;
+}
+
+.prose li + li {
+  margin-top: 0.35rem;
 }
 
 .prose a {
   color: var(--color-accent);
+  text-underline-offset: 3px;
+}
+
+.prose img {
+  border-radius: var(--radius-sm);
+  margin-block: 2rem;
 }
 
 .prose blockquote {
-  margin: 1.5rem 0;
-  padding: 0.5rem 1.25rem;
-  border-left: 4px solid var(--color-accent);
-  background: var(--color-surface);
+  margin: 2rem 0;
+  padding: 0.25rem 0 0.25rem 1.5rem;
+  border-left: 3px solid var(--color-accent);
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-style: italic;
+  color: var(--color-text);
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  margin: 2.5rem 0;
+}
+
+.prose code {
+  font-size: 0.9em;
+  background: var(--color-surface-2);
+  padding: 0.15em 0.4em;
+  border-radius: 6px;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+}
+
+.prose th,
+.prose td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
 }
 
 .sr-only {
@@ -97,4 +288,28 @@ h3 {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -100px;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* Abstand zwischen Kategorieleiste und Beitragsliste */
+.listing {
+  margin-top: 2.5rem;
+}
+
+.prose blockquote p:last-child {
+  margin-bottom: 0;
 }

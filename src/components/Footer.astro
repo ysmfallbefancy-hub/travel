@@ -1,42 +1,114 @@
 ---
-import { FOOTER_NAV, SITE } from '../consts';
+import { getCollection } from 'astro:content';
+import { FOOTER_NAV, NAV, SITE } from '../consts';
 
 const year = new Date().getFullYear();
+const categories = (await getCollection('categories')).sort((a, b) =>
+  a.data.name.localeCompare(b.data.name, 'de'),
+);
 ---
 
 <footer class="site-footer">
-  <div class="container inner">
-    <p>© {year} {SITE.title}. Alle Rechte vorbehalten.</p>
+  <div class="container grid">
+    <div class="brand">
+      <a href="/" class="logo">{SITE.title}</a>
+      <p>{SITE.description}</p>
+    </div>
+    <nav aria-label="Seiten">
+      <h2>Entdecken</h2>
+      <ul>
+        {NAV.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+    </nav>
+    <nav aria-label="Kategorien im Fußbereich">
+      <h2>Kategorien</h2>
+      <ul>
+        {categories.map((c) => <li><a href={`/kategorie/${c.id}/`}>{c.data.name}</a></li>)}
+      </ul>
+    </nav>
     <nav aria-label="Rechtliches">
+      <h2>Rechtliches</h2>
       <ul>
         {FOOTER_NAV.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
       </ul>
     </nav>
+  </div>
+  <div class="container bottom">
+    <p>© {year} {SITE.title}. Alle Rechte vorbehalten.</p>
+    <a href="#inhalt" class="to-top">Nach oben ↑</a>
   </div>
 </footer>
 
 <style>
   .site-footer {
     margin-top: 4rem;
+    background: var(--color-surface);
     border-top: 1px solid var(--color-border);
     color: var(--color-muted);
     font-size: 0.95rem;
   }
-  .inner {
+  .grid {
+    display: grid;
+    grid-template-columns: 2fr repeat(3, 1fr);
+    gap: 2.5rem;
+    padding-block: 3.5rem 2.5rem;
+  }
+  .logo {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-weight: 650;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+  .brand p {
+    max-width: 36ch;
+    margin: 0.75rem 0 0;
+  }
+  h2 {
+    margin: 0 0 0.85rem;
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 650;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text);
+  }
+  ul {
+    display: grid;
+    gap: 0.45rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  a {
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--color-accent);
+  }
+  .bottom {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 1rem;
-    padding-block: 2rem;
+    padding-block: 1.5rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.875rem;
   }
-  p {
+  .bottom p {
     margin: 0;
   }
-  ul {
-    display: flex;
-    gap: 1.25rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  @media (max-width: 860px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .brand {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (max-width: 480px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

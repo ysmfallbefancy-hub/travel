@@ -16,6 +16,21 @@ const ogImage = image ? new URL(image, Astro.site) : undefined;
 
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#faf8f4" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#121316" media="(prefers-color-scheme: dark)" />
+<!-- Farbschema vor dem ersten Rendern setzen, damit nichts aufblitzt -->
+<script is:inline>
+  (() => {
+    let theme;
+    try {
+      theme = localStorage.getItem('theme');
+    } catch {}
+    if (theme !== 'light' && theme !== 'dark') {
+      theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    document.documentElement.dataset.theme = theme;
+  })();
+</script>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="canonical" href={canonical} />
 <link rel="sitemap" href="/sitemap-index.xml" />

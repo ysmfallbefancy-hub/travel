@@ -1,6 +1,9 @@
 ---
+import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import CategoryBar from '../components/CategoryBar.astro';
 import PostCard from '../components/PostCard.astro';
 import { SITE } from '../consts';
 import { getPosts } from '../utils/posts';
@@ -8,74 +11,163 @@ import { getPosts } from '../utils/posts';
 const posts = await getPosts();
 const featured = posts.find((p) => p.data.featured) ?? posts[0];
 const latest = posts.filter((p) => p !== featured).slice(0, 6);
-const categories = await getCollection('categories');
+
+// Für jede Kategorie das Titelbild des neuesten Beitrags als Kachelbild verwenden
+const categories = (await getCollection('categories'))
+  .map((c) => {
+    const inCategory = posts.filter((p) => p.data.category.id === c.id);
+    return { ...c, count: inCategory.length, cover: inCategory[0]?.data.cover };
+  })
+  .sort((a, b) => b.count - a.count || a.data.name.localeCompare(b.data.name, 'de'));
 ---
 
 <BaseLayout>
-  <section class="hero container">
-    <h1>{SITE.title}</h1>
-    <p>{SITE.tagline}</p>
-  </section>
-
   {
-    featured && (
-      <section class="container">
-        <h2 class="sr-only">Empfohlener Beitrag</h2>
-        <div class="post-grid">
-          <PostCard post={featured} />
-        </div>
-      </section>
+    featured ? (
+      <Hero post={featured} />
+    ) : (
+      <header class="page-header container">
+        <h1>{SITE.title}</h1>
+        <p>{SITE.tagline}</p>
+      </header>
     )
   }
 
-  <section class="container">
-    <h2>Neueste Beiträge</h2>
-    <div class="post-grid">
-      {latest.map((post) => <PostCard post={post} />)}
+  <CategoryBar />
+
+  <section class="section container" aria-labelledby="neueste">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Neu im Blog</span>
+        <h2 id="neueste">Neueste Geschichten</h2>
+      </div>
+      <a href="/blog/" class="link-arrow">Alle Beiträge ansehen →</a>
     </div>
-    <p><a href="/blog/">Alle Beiträge ansehen →</a></p>
+    {
+      latest.length > 0 ? (
+        <div class="post-grid">
+          {latest.map((post, i) => (
+            <PostCard post={post} eager={i < 3} />
+          ))}
+        </div>
+      ) : (
+        <p class="empty">Bald gibt es hier neue Geschichten.</p>
+      )
+    }
   </section>
 
-  <section class="container">
-    <h2>Kategorien</h2>
-    <ul class="categories">
-      {
-        categories.map((c) => (
-          <li>
-            <a href={`/kategorie/${c.id}/`}>{c.data.name}</a>
-          </li>
-        ))
-      }
-    </ul>
+  <section class="section destinations" aria-labelledby="themen">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Inspiration</span>
+          <h2 id="themen">Nach Thema stöbern</h2>
+        </div>
+        <a href="/kategorien/" class="link-arrow">Alle Kategorien →</a>
+      </div>
+      <ul class="tiles">
+        {
+          categories.map((c) => (
+            <li>
+              <a href={`/kategorie/${c.id}/`} class="tile">
+                {c.cover && (
+                  <Image
+                    src={c.cover}
+                    alt=""
+                    widths={[400, 640, 960]}
+                    sizes="(min-width: 1200px) 380px, (min-width: 720px) 33vw, 100vw"
+                  />
+                )}
+                <span class="tile-text">
+                  <span class="tile-name">{c.data.name}</span>
+                  <span class="tile-count">{c.count === 1 ? '1 Beitrag' : `${c.count} Beiträge`}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section container about" aria-labelledby="ueber">
+    <span class="eyebrow">Über diesen Blog</span>
+    <h2 id="ueber">Ehrliche Geschichten von unterwegs</h2>
+    <p>{SITE.description}</p>
+    <a href="/ueber-uns/" class="button">Lerne uns kennen</a>
   </section>
 </BaseLayout>
 
 <style>
-  .hero {
-    padding-block: 4rem 1rem;
-    text-align: center;
+  .destinations {
+    background: var(--color-surface-2);
   }
-  .hero h1 {
-    font-size: clamp(2.5rem, 6vw, 4rem);
-    margin: 0;
-  }
-  .hero p {
-    color: var(--color-muted);
-    font-size: 1.2rem;
-  }
-  .categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+    gap: 1.25rem;
     list-style: none;
+    margin: 0;
     padding: 0;
   }
-  .categories a {
-    display: inline-block;
-    padding: 0.4rem 1rem;
-    border: 1px solid var(--color-border);
-    border-radius: 999px;
+  .tile {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: flex-end;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+    color: #fff;
     text-decoration: none;
-    background: var(--color-surface);
+  }
+  .tile img {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .tile::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(to top, rgb(0 0 0 / 0.65), rgb(0 0 0 / 0.05) 60%);
+  }
+  .tile:hover img {
+    transform: scale(1.06);
+  }
+  .tile-text {
+    display: grid;
+    padding: 1.4rem;
+  }
+  .tile-name {
+    font-family: var(--font-serif);
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .tile-count {
+    font-size: 0.9rem;
+    opacity: 0.85;
+  }
+  .about {
+    text-align: center;
+    padding-block: 5rem;
+  }
+  .about h2 {
+    margin: 0.5rem auto 1rem;
+    font-size: clamp(1.9rem, 4vw, 2.75rem);
+    max-width: 20ch;
+  }
+  .about p {
+    max-width: 55ch;
+    margin: 0 auto 2rem;
+    color: var(--color-muted);
+    font-size: 1.15rem;
   }
 </style>
