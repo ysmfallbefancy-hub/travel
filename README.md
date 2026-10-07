@@ -1,6 +1,6 @@
 # Reisen & Geschichten
 
-Deutschsprachiger Reiseblog auf Basis von [Astro](https://astro.build). Inhalte lassen sich über Sveltia CMS unter `/admin` bearbeiten. Das finale Design und das Deployment auf Cloudflare Pages folgen in eigenen Schritten.
+Deutschsprachiger Reiseblog auf Basis von [Astro](https://astro.build). Inhalte lassen sich über Sveltia CMS unter `/admin` bearbeiten. Die Website läuft auf Cloudflare Pages.
 
 ## Entwicklung
 
@@ -36,6 +36,20 @@ Das Schema steht in `src/content.config.ts`, Website-Titel und Navigation in `sr
 | `/ueber-uns/` | Über uns / Autoren |
 | `/impressum/`, `/datenschutz/` | Rechtliches (Platzhalter) |
 | `/rss.xml`, `/sitemap-index.xml` | Feed und Sitemap |
+
+## Deployment (Cloudflare Pages)
+
+Cloudflare Pages baut die Website bei jedem Commit auf `main` neu, auch bei Änderungen aus dem CMS. Einstellungen des Pages-Projekts:
+
+| Einstellung | Wert |
+| --- | --- |
+| Produktionszweig | `main` |
+| Framework-Voreinstellung | Astro |
+| Build-Befehl | `npm run build` |
+| Ausgabeverzeichnis | `dist` |
+| Node-Version | 22 (aus `.node-version`) |
+
+`public/_headers` setzt Cache- und Sicherheits-Header. Bei eigener Domain `site` in `astro.config.mjs` anpassen; Canonical-URLs, Open Graph, Sitemap und `robots.txt` übernehmen sie automatisch.
 
 ## Redaktion (Sveltia CMS)
 

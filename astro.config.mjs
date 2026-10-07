@@ -6,5 +6,10 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://reisen-und-geschichten.pages.dev',
   trailingSlash: 'ignore',
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      // Das CMS gehört nicht in die Sitemap
+      filter: (page) => !page.includes('/admin/'),
+    }),
+  ],
 });
