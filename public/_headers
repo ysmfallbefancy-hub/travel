@@ -1,0 +1,12 @@
+# Cloudflare: HTTP-Header für die statischen Dateien
+# Von Astro erzeugte Dateien tragen einen Hash im Namen und ändern sich nie
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# Das CMS nicht in Suchmaschinen aufnehmen
+/admin/*
+  X-Robots-Tag: noindex

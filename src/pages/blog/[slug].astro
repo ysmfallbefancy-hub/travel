@@ -26,7 +26,19 @@ const author = await getEntry(post.data.author);
 const minutes = readingTime(post.body);
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description} image={post.data.cover.src}>
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  image={post.data.cover}
+  imageAlt={post.data.coverAlt}
+  article={{
+    published: post.data.date,
+    modified: post.data.updated,
+    author: author?.data.name,
+    section: category?.data.name,
+    tags: post.data.tags,
+  }}
+>
   <article>
     <header class="post-header container">
       {category && <a class="eyebrow" href={`/kategorie/${category.id}/`}>{category.data.name}</a>}

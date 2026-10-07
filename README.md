@@ -1,6 +1,6 @@
 # Reisen & Geschichten
 
-Deutschsprachiger Reiseblog auf Basis von [Astro](https://astro.build). Inhalte lassen sich über Sveltia CMS unter `/admin` bearbeiten. Das finale Design und das Deployment auf Cloudflare Pages folgen in eigenen Schritten.
+Deutschsprachiger Reiseblog auf Basis von [Astro](https://astro.build). Inhalte lassen sich über Sveltia CMS unter `/admin` bearbeiten. Die Website läuft auf Cloudflare Workers.
 
 ## Entwicklung
 
@@ -37,9 +37,22 @@ Das Schema steht in `src/content.config.ts`, Website-Titel und Navigation in `sr
 | `/impressum/`, `/datenschutz/` | Rechtliches (Platzhalter) |
 | `/rss.xml`, `/sitemap-index.xml` | Feed und Sitemap |
 
+## Deployment (Cloudflare Workers)
+
+Cloudflare baut die Website bei jedem Commit auf `main` neu, auch bei Änderungen aus dem CMS, und liefert `dist` als statische Dateien aus (`wrangler.jsonc`). Einstellungen des Workers-Projekts:
+
+| Einstellung | Wert |
+| --- | --- |
+| Projektname | `reisen-und-geschichten` (muss zu `name` in `wrangler.jsonc` passen) |
+| Build-Befehl | `npm run build` |
+| Deploy-Befehl | `npx wrangler deploy` |
+| Preview-Befehl | `npx wrangler preview` |
+
+`public/_headers` setzt Cache- und Sicherheits-Header, unbekannte Adressen zeigen die 404-Seite. Bei eigener Domain `site` in `astro.config.mjs` anpassen; Canonical-URLs, Open Graph, Sitemap und `robots.txt` übernehmen sie automatisch.
+
 ## Redaktion (Sveltia CMS)
 
-Das CMS liegt unter `/admin` (`public/admin/index.html` und `public/admin/config.yml`). Es speichert jede Änderung als Commit direkt in `main` dieses Repositorys; Cloudflare Pages baut die Website danach neu.
+Das CMS liegt unter `/admin` (`public/admin/index.html` und `public/admin/config.yml`). Es speichert jede Änderung als Commit direkt in `main` dieses Repositorys; Cloudflare baut die Website danach neu.
 
 - **Beiträge** → `src/content/blog/`, Titelbilder → `src/assets/images/blog/`
 - **Kategorien** → `src/content/categories/`
@@ -61,10 +74,10 @@ GitHub erlaubt den Login nicht direkt aus dem Browser, deshalb braucht es den [S
 
 1. Worker aus dem Sveltia-CMS-Auth-Repository in Cloudflare bereitstellen (Button „Deploy to Cloudflare“ in dessen README). Ergebnis: eine URL wie `https://sveltia-cms-auth.<konto>.workers.dev`.
 2. Auf GitHub unter *Settings → Developer settings → OAuth Apps* eine neue OAuth-App anlegen:
-   - Homepage URL: die Adresse der Website, z. B. `https://reisen-und-geschichten.pages.dev`
+   - Homepage URL: die Adresse der Website, z. B. `https://reisen-und-geschichten.<konto>.workers.dev`
    - Authorization callback URL: `https://sveltia-cms-auth.<konto>.workers.dev/callback`
 3. Im Worker unter *Settings → Variables* eintragen:
    - `GITHUB_CLIENT_ID` und `GITHUB_CLIENT_SECRET` (als Secret) aus der OAuth-App
-   - `ALLOWED_DOMAINS`: die Domain(s) der Website, z. B. `reisen-und-geschichten.pages.dev` (bei eigener Domain auch diese)
+   - `ALLOWED_DOMAINS`: die Domain(s) der Website, z. B. `reisen-und-geschichten.<konto>.workers.dev` (bei eigener Domain auch diese)
 4. In `public/admin/config.yml` bei `backend` die Zeile `base_url:` mit der Worker-URL einkommentieren.
 5. Bei eigener Domain außerdem `site_url` und `display_url` in `config.yml` sowie `site` in `astro.config.mjs` anpassen.
