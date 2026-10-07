@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
 
 Sitemap: https://reisen-und-geschichten.pages.dev/sitemap-index.xml
