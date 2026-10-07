@@ -1,4 +1,4 @@
-# Cloudflare Pages: HTTP-Header
+# Cloudflare: HTTP-Header für die statischen Dateien
 # Von Astro erzeugte Dateien tragen einen Hash im Namen und ändern sich nie
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
